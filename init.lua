@@ -164,6 +164,9 @@ vim.opt.scrolloff = 10
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
+vim.keymap.set('n', 'ff', '<cmd>Telescope find_files<CR>')
+vim.keymap.set('n', 'fg', '<cmd>Telescope live_grep<CR>')
+
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
@@ -254,6 +257,22 @@ require('lazy').setup({
         changedelete = { text = '~' },
       },
     },
+  },
+
+  {
+    'kndndrj/nvim-dbee',
+    dependencies = {
+      'MunifTanjim/nui.nvim',
+    },
+    build = function()
+      -- Install tries to automatically detect the install method.
+      -- if it fails, try calling it with one of these parameters:
+      --    "curl", "wget", "bitsadmin", "go"
+      require('dbee').install()
+    end,
+    config = function()
+      require('dbee').setup(--[[optional config]])
+    end,
   },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
@@ -595,6 +614,13 @@ require('lazy').setup({
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
 
+      local lspconfig = require 'lspconfig'
+
+      lspconfig.gleam.setup {
+        cmd = { 'gleam', 'lsp' },
+        filetypes = { 'gleam' },
+        root_dir = lspconfig.util.root_pattern('gleam.toml', '.git'),
+      }
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
       --
@@ -954,3 +980,13 @@ require('lazy').setup({
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+
+vim.cmd 'vert split'
+vim.cmd 'vert 1resize 25'
+vim.cmd 'wincmd h'
+vim.cmd ':Explore'
+vim.cmd 'wincmd l'
+vim.cmd 'NetrwC'
+vim.cmd 'wincmd h'
+
+require('lspconfig').protols.setup {}
