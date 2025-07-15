@@ -87,8 +87,8 @@ P.S. You can delete this when you're done too. It's your config now! :)
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
-vim.g.mapleader = ' '
-vim.g.maplocalleader = ' '
+vim.g.mapleader = '\\'
+vim.g.maplocalleader = '\\'
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = false
@@ -102,7 +102,7 @@ vim.g.have_nerd_font = false
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -658,6 +658,7 @@ require('lazy').setup({
             },
           },
         },
+        jdtls = {},
       }
 
       -- Ensure the servers and tools above are installed
@@ -933,7 +934,6 @@ require('lazy').setup({
     --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
   },
-
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
   -- place them in the correct locations.
@@ -981,12 +981,48 @@ require('lazy').setup({
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
 
-vim.cmd 'vert split'
+vim.cmd 'Lexplore'
 vim.cmd 'vert 1resize 25'
-vim.cmd 'wincmd h'
-vim.cmd ':Explore'
 vim.cmd 'wincmd l'
-vim.cmd 'NetrwC'
-vim.cmd 'wincmd h'
+vim.cmd 'split'
+vim.cmd 'terminal'
+vim.cmd 'resize 10'
+
+vim.g.netrw_keepdir = 0
+
+-- Create a dedicated augroup to hold our autocmd
+-- The { clear = true } option prevents duplicate autocmds when you reload your config
+local netrw_augroup = vim.api.nvim_create_augroup('NetrwCustomizations', { clear = true })
+
+-- Create an autocmd that runs whenever a 'netrw' filetype buffer is opened
+vim.api.nvim_create_autocmd('FileType', {
+  group = netrw_augroup,
+  pattern = 'netrw',
+  desc = 'Remap % to create file in the currently browsed directory',
+  callback = function()
+    -- We are now inside a netrw buffer.
+    -- Create a buffer-local mapping for the '%' key.
+    vim.keymap.set('n', '%', function()
+      -- netrw stores the path of the browsed directory in this buffer variable
+      local current_dir = vim.b.netrw_curdir
+
+      -- Prompt the user for a filename
+      vim.ui.input({ prompt = 'Create new file: ' }, function(filename)
+        -- If the user entered a filename (and didn't just press Esc)
+        if filename and filename ~= '' then
+          -- Construct the full path for the new file
+          local new_file_path = current_dir .. '/' .. filename
+
+          -- Create an empty file at that path without opening it.
+          -- This is better than :edit as it keeps you in the explorer view.
+          vim.fn.writefile({}, new_file_path)
+
+          -- Feed the 'R' key to netrw to refresh its listing
+          vim.cmd('edit ' .. vim.fn.fnameescape(current_dir))
+        end
+      end)
+    end, { buffer = true, noremap = true, silent = true })
+  end,
+})
 
 require('lspconfig').protols.setup {}
