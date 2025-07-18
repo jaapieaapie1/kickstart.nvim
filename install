@@ -114,7 +114,7 @@ main() {
   fi
 
   msg "Cloning kickstart.nvim..."
-  git clone https://github.com/nvim-lua/kickstart.nvim.git "$nvim_config_dir"
+  git clone https://github.com/jaapieaapie1/kickstart.nvim.git "$nvim_config_dir"
 
   # --- Nerd Font Installation ---
   msg "Nerd Font Installation:"
